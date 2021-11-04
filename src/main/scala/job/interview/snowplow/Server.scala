@@ -4,18 +4,22 @@ import cats.effect.{Async, Resource}
 import cats.syntax.all._
 import com.comcast.ip4s._
 import fs2.Stream
+import job.interview.snowplow.repo.FileSystemSchemaRepo
 import org.http4s.ember.client.EmberClientBuilder
 import org.http4s.ember.server.EmberServerBuilder
 import org.http4s.implicits._
 import org.http4s.server.middleware.Logger
 
+import java.nio.file.Paths
+
 object Server {
 
-  def stream[F[_]: Async]: Stream[F, Nothing] = {
+  def stream[F[+_]: Async]: Stream[F, Nothing] = {
     for {
       client <- Stream.resource(EmberClientBuilder.default[F].build)
       helloWorldAlg = HelloWorld.impl[F]
       jokeAlg = Jokes.impl[F](client)
+      jsonSchemasAlg = JsonSchemas.impl[F](new FileSystemSchemaRepo(Paths.get(System.getProperty("java.io.tmpdir"))))
 
       // Combine Service Routes into an HttpApp.
       // Can also be done via a Router if you
@@ -23,7 +27,8 @@ object Server {
       // in the underlying routes.
       httpApp = (
         Routes.helloWorldRoutes[F](helloWorldAlg) <+>
-        Routes.jokeRoutes[F](jokeAlg)
+        Routes.jokeRoutes[F](jokeAlg) <+>
+        Routes.schemaRoutes(jsonSchemasAlg)
       ).orNotFound
 
       // With Middlewares in place

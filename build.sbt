@@ -10,14 +10,17 @@ lazy val root = (project in file("."))
     name := "json-validation-service",
     version := "0.0.1-SNAPSHOT",
     scalaVersion := "2.13.6",
+    scalacOptions += "-nowarn",
     libraryDependencies ++= Seq(
       "org.http4s"      %% "http4s-ember-server" % Http4sVersion,
       "org.http4s"      %% "http4s-ember-client" % Http4sVersion,
       "org.http4s"      %% "http4s-circe"        % Http4sVersion,
       "org.http4s"      %% "http4s-dsl"          % Http4sVersion,
       "io.circe"        %% "circe-generic"       % CirceVersion,
+      "io.circe"        %% "circe-parser"        % CirceVersion,
       "org.scalameta"   %% "munit"               % MunitVersion           % Test,
       "org.typelevel"   %% "munit-cats-effect-3" % MunitCatsEffectVersion % Test,
+      "commons-io"      %  "commons-io"          % "2.11.0"               % Test,
       "ch.qos.logback"  %  "logback-classic"     % LogbackVersion,
       "com.github.java-json-tools"% "json-schema-validator" % "2.2.14"
     ),
