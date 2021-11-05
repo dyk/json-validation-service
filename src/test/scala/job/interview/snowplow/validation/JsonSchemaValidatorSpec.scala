@@ -1,6 +1,6 @@
 package job.interview.snowplow.validation
 
-import cats.data.Validated.Valid
+import cats.data.Validated.{Invalid, Valid}
 import job.interview.snowplow.{jsonFromClasspath => json}
 import munit.FunSuite
 
@@ -20,7 +20,7 @@ class JsonSchemaValidatorSpec extends FunSuite {
     val doc = json("/json/config.json")
     assertEquals(
       validate(schema = json("/schemas/config-schema.json"), doc = doc),
-      Valid(json("/json/bob.json"))
+      Valid(doc)
     )
   }
 
@@ -30,7 +30,7 @@ class JsonSchemaValidatorSpec extends FunSuite {
         schema = json("/schemas/fstab.json"),
         doc = json("/json/fstab-bad.json")
       ),
-      Valid(json("/json/bob.json"))
+      Invalid("object has missing required properties ([\"swap\"])")
     )
   }
 
@@ -40,17 +40,18 @@ class JsonSchemaValidatorSpec extends FunSuite {
         schema = json("/schemas/fstab.json"),
         doc = json("/json/fstab-bad2.json")
       ),
-      Valid(json("/json/bob.json"))
+      Invalid("object has missing required properties ([\"fstype\"])")
     )
   }
 
   test("com.github.fge.jsonschema bug?") {
+    val doc = json("/json/config.json")
     assertEquals(
       validate(
         schema = json("/json/bob.json"),
-        doc = json("/json/config.json")
+        doc = doc
       ),
-      Valid(json("/json/bob.json"))
+      Valid(doc)
     )
   }
 
