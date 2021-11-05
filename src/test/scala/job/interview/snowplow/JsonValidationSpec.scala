@@ -14,18 +14,27 @@ import java.nio.file.Files
 
 class JsonValidationSpec extends CatsEffectSuite {
 
-  implicit def jsonDecoder[A : Decoder]: EntityDecoder[IO, A] = jsonOf[IO, A]
+  implicit def jsonDecoder[A: Decoder]: EntityDecoder[IO, A] = jsonOf[IO, A]
 
-  case class ValidationFixture(repo: TestFileSystemSchemaRepo, jsonValidation: JsonValidation[IO]) {
+  case class ValidationFixture(
+      repo: TestFileSystemSchemaRepo,
+      jsonValidation: JsonValidation[IO]
+  ) {
     def post(body: String, schemaId: SchemaId) = {
-      val postRequest = Request[IO](method = Method.POST, uri = uri"/validate".addPath(schemaId.name), body = toByteStream(body))
+      val postRequest = Request[IO](
+        method = Method.POST,
+        uri = uri"/validate".addPath(schemaId.name),
+        body = toByteStream(body)
+      )
       Routes.validateRoutes(jsonValidation).orNotFound(postRequest)
     }
   }
 
   val jsonValidation = FunFixture[ValidationFixture](
     setup = { test =>
-      val repo = new TestFileSystemSchemaRepo(Files.createTempDirectory(s"${test.name}_"))
+      val repo = new TestFileSystemSchemaRepo(
+        Files.createTempDirectory(s"${test.name}_")
+      )
       ValidationFixture(repo, JsonValidation.impl[IO](repo))
     },
     teardown = { f =>
@@ -33,37 +42,53 @@ class JsonValidationSpec extends CatsEffectSuite {
     }
   )
 
-  jsonValidation.test("should return not found when there is no schema") { jvt =>
-    val res = jvt.post("""{"name":"Alice"}""", SchemaId("no-such-schema"))
-    assertIO(res.map(_.status), Status.NotFound)
+  jsonValidation.test("should return not found when there is no schema") {
+    jvt =>
+      val res = jvt.post("""{"name":"Alice"}""", SchemaId("no-such-schema"))
+      assertIO(res.map(_.status), Status.NotFound)
   }
 
   jsonValidation.test("should validate valid json") { jvt =>
     val res = (for {
-      _ <- jvt.repo.store(SchemaId("config-schema"), jsonFromClasspath("/schemas/config-schema.json"))
-      res <- jvt.post(jsonFromClasspath("/json/config.json").noSpaces, SchemaId("config-schema"))
+      _ <- jvt.repo.store(
+        SchemaId("config-schema"),
+        jsonFromClasspath("/schemas/config-schema.json")
+      )
+      res <- jvt.post(
+        jsonFromClasspath("/json/config.json").noSpaces,
+        SchemaId("config-schema")
+      )
     } yield res)
 
     assertIO(res.map(_.status), Status.NotFound)
-        assertIO(res.flatMap(_.as[Json]), json("""{
+    assertIO(
+      res.flatMap(_.as[Json]),
+      json("""{
             "action": "validateDocument",
             "id": "config-schema",
             "status": "success"
-          }"""))
+          }""")
+    )
   }
 
   jsonValidation.test("should validate invalid json") { jvt =>
     val res = (for {
-      _ <- jvt.repo.store(SchemaId("config-schema"), jsonFromClasspath("/schemas/config-schema.json"))
+      _ <- jvt.repo.store(
+        SchemaId("config-schema"),
+        jsonFromClasspath("/schemas/config-schema.json")
+      )
       res <- jvt.post("""{"name":"Alice"}""", SchemaId("config-schema"))
     } yield res)
 
     assertIO(res.map(_.status), Status.NotFound)
-    assertIO(res.flatMap(_.as[Json]), json("""{
+    assertIO(
+      res.flatMap(_.as[Json]),
+      json("""{
             "action": "validateDocument",
             "id": "config-schema",
             "status": "error",
             "message": "object has missing required properties ([\"destination\",\"source\"])"
-          }"""))
+          }""")
+    )
   }
 }

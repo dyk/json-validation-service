@@ -9,13 +9,15 @@ import java.io.File
 import java.nio.charset.StandardCharsets
 
 package object snowplow {
-  def toByteStream(s: String) = fs2.Stream.chunk(Chunk.array(s.getBytes("UTF-8")))
+  def toByteStream(s: String) =
+    fs2.Stream.chunk(Chunk.array(s.getBytes("UTF-8")))
   def json(s: String) = parse(s).toOption.get
   def jsonFromClasspath(resource: String): Json =
     parse(
       FileUtils.readFileToString(
         new File(getClass.getResource(resource).getPath),
-        StandardCharsets.UTF_8))
-      .toOption.get
+        StandardCharsets.UTF_8
+      )
+    ).toOption.get
 
 }

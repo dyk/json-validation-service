@@ -32,10 +32,10 @@ class FileSystemSchemaRepoSpec extends CatsEffectSuite {
   }
 
   tmpDir.test("repo should not get invalid schema") { baseDir =>
-
     FileUtils.copyFile(
       new File(getClass.getResource("/schemas/sample.pdf").getPath),
-      baseDir.resolve("invalid-schema").toFile)
+      baseDir.resolve("invalid-schema").toFile
+    )
 
     val repo = new FileSystemSchemaRepo[IO](baseDir)
 
@@ -43,7 +43,6 @@ class FileSystemSchemaRepoSpec extends CatsEffectSuite {
   }
 
   tmpDir.test("repo should override schema when exists") { baseDir =>
-
     val repo = new FileSystemSchemaRepo[IO](baseDir)
     val schemaId = SchemaId("test1")
     val json = for {
@@ -54,6 +53,5 @@ class FileSystemSchemaRepoSpec extends CatsEffectSuite {
 
     assertIO(json, Option(Json.fromString("test-json2")))
   }
-
 
 }

@@ -32,8 +32,10 @@ class FileSystemSchemaRepo[F[_]: Sync](baseDir: Path) extends SchemaRepo[F] {
   override def store(schemaId: SchemaId, schema: Json): F[Unit] = {
     val path = baseDir.resolve(schemaId.name)
     Files.deleteIfExists(path)
-    Sync[F].blocking {
-      Files.write(path, schema.noSpaces.getBytes(StandardCharsets.UTF_8))
-    }.map(_ => ())
+    Sync[F]
+      .blocking {
+        Files.write(path, schema.noSpaces.getBytes(StandardCharsets.UTF_8))
+      }
+      .map(_ => ())
   }
 }
