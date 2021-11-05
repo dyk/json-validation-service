@@ -16,7 +16,7 @@ class FileSystemSchemaRepoSpec extends CatsEffectSuite {
       Files.createTempDirectory(s"${test.name}_")
     },
     teardown = { dir =>
-      FileUtils.deleteDirectory(dir.toFile);
+      FileUtils.deleteDirectory(dir.toFile)
     }
   )
 
