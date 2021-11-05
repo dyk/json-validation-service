@@ -12,7 +12,7 @@ import org.http4s.implicits._
 import io.circe.parser._
 import org.apache.commons.io.FileUtils
 
-import java.nio.file.{Files, Path}
+import java.nio.file.{Files, Path, Paths}
 
 
 class JsonSchemasSpec extends CatsEffectSuite {
@@ -64,19 +64,17 @@ class JsonSchemasSpec extends CatsEffectSuite {
     assertIO(res.map(_.status), Status.NotFound)
   }
 
-  jsonSchemas.test("should get uploded schema") { jst =>
+  jsonSchemas.test("should get uploaded schema") { jst =>
 
     val schemaId = SchemaId("get-after-post")
-    assertIO(jst.post("""{"name":"Bob"}""", schemaId).map(_.status), Status.Ok)
 
-    val res = jst.get(schemaId)
+    val res = (for {
+      _ <- jst.post("""{"name":"Bob"}""", schemaId)
+      res <- jst.get(schemaId)
+    } yield res)
+
     assertIO(res.map(_.status), Status.Ok)
-    assertIO(res.flatMap(_.as[Json]), json(
-      """{
-        "action": "uploadSchema",
-        "id": "test1",
-        "status": "success"
-      }"""))
+    assertIO(res.flatMap(_.as[Json]), json("""{"name":"Bob"}"""))
   }
 
   jsonSchemas.test("should report error on invalid json") { jst =>
@@ -84,14 +82,12 @@ class JsonSchemasSpec extends CatsEffectSuite {
     val schemaId = SchemaId("invalid-json")
     val res = jst.post("""{{invalid json""", schemaId)
     assertIO(res.map(_.status), Status.Ok)
-    assertIO(res.flatMap(_.as[Json]), json(
-      """{
+
+    assertIO(res.flatMap(_.as[Json]), json("""{
         "action": "uploadSchema",
-        "id": "test1",
-        "status": "success"
+        "id": "invalid-json",
+        "status": "error",
+        "message": "expected \" got '{inval...' (line 1, column 2)"
       }"""))
   }
-
-
 }
-

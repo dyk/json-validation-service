@@ -32,10 +32,19 @@ object Routes {
               Ok(
                 Json.obj(
                   ("action", Json.fromString("uploadSchema")),
-                  ("id", Json.fromString(schemaId.name))
+                  ("id", Json.fromString(schemaId.name)),
+                  ("status", Json.fromString("success"))
                 )
               )
-            case StoringResults.Invalid(_) => Ok("error")
+            case StoringResults.Invalid(schemaId, errorMsg) =>
+              Ok(
+                Json.obj(
+                  ("action", Json.fromString("uploadSchema")),
+                  ("id", Json.fromString(schemaId.name)),
+                  ("status", Json.fromString("error")),
+                  ("message", Json.fromString(errorMsg))
+                )
+              )
           }
         } yield resp
     }
