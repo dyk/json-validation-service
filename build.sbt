@@ -13,7 +13,6 @@ lazy val root = (project in file("."))
     name := "json-validation-service",
     version := "0.0.1-SNAPSHOT",
     scalaVersion := "2.13.6",
-    scalacOptions += "-nowarn",
     libraryDependencies ++= Seq(
       "org.http4s" %% "http4s-ember-server" % Http4sVersion,
       "org.http4s" %% "http4s-ember-client" % Http4sVersion,
@@ -21,7 +20,6 @@ lazy val root = (project in file("."))
       "org.http4s" %% "http4s-dsl" % Http4sVersion,
       "io.circe" %% "circe-generic" % CirceVersion,
       "io.circe" %% "circe-parser" % CirceVersion,
-      // "com.github.pureconfig" %% "pureconfig-fs2" % PureConfigVersion,
       "com.github.pureconfig" %% "pureconfig" % PureConfigVersion,
       "org.scalameta" %% "munit" % MunitVersion % Test,
       "org.typelevel" %% "munit-cats-effect-3" % MunitCatsEffectVersion % Test,

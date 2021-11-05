@@ -1,18 +1,16 @@
 package job.interview.snowplow
 
 import cats.effect.IO
-import fs2.Chunk
 import io.circe._
-import io.circe.parser._
 import job.interview.snowplow.domain.SchemaId
-import job.interview.snowplow.repo.{FileSystemSchemaRepo, TestFileSystemSchemaRepo}
+import job.interview.snowplow.repo.TestFileSystemSchemaRepo
 import munit.CatsEffectSuite
 import org.apache.commons.io.FileUtils
 import org.http4s._
 import org.http4s.circe.jsonOf
 import org.http4s.implicits._
 
-import java.nio.file.{Files, Path}
+import java.nio.file.Files
 
 class JsonValidationSpec extends CatsEffectSuite {
 

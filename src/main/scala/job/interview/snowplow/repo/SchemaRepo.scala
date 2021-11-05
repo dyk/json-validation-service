@@ -4,6 +4,7 @@ import cats.effect._
 import io.circe._
 import io.circe.parser._
 import job.interview.snowplow.domain.SchemaId
+import cats.implicits._
 
 import java.nio.charset.StandardCharsets
 import java.nio.file.{Files, Path}
@@ -33,6 +34,6 @@ class FileSystemSchemaRepo[F[_]: Sync](baseDir: Path) extends SchemaRepo[F] {
     Files.deleteIfExists(path)
     Sync[F].blocking {
       Files.write(path, schema.noSpaces.getBytes(StandardCharsets.UTF_8))
-    }
+    }.map(_ => ())
   }
 }
