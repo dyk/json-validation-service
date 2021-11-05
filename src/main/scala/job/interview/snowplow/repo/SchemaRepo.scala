@@ -7,6 +7,7 @@ import job.interview.snowplow.domain.SchemaId
 
 import java.nio.charset.StandardCharsets
 import java.nio.file.{Files, Path}
+import scala.util.Try
 
 trait SchemaRepo[F[_]] {
   def get(schemaId: SchemaId): F[Option[Json]]
@@ -20,7 +21,10 @@ class FileSystemSchemaRepo[F[_]: Sync](baseDir: Path) extends SchemaRepo[F] {
     val path = baseDir.resolve(schemaId.name)
     if (path.toFile.exists())
       Sync[F].blocking {
-        parse(Files.readString(path)).toOption
+        for {
+          text <- Try(Files.readString(path)).toOption
+          json <- parse(text).toOption
+        } yield json
       }
     else Sync[F].pure(None)
   }
