@@ -14,7 +14,6 @@ trait SchemaRepo[F[_]] {
   def store(schemaId: SchemaId, schema: Json): F[Unit]
 }
 
-
 class FileSystemSchemaRepo[F[_]: Sync](baseDir: Path) extends SchemaRepo[F] {
 
   override def get(schemaId: SchemaId): F[Option[Json]] = {

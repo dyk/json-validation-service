@@ -19,7 +19,11 @@ object Server {
       client <- Stream.resource(EmberClientBuilder.default[F].build)
       helloWorldAlg = HelloWorld.impl[F]
       jokeAlg = Jokes.impl[F](client)
-      jsonSchemasAlg = JsonSchemas.impl[F](new FileSystemSchemaRepo(Paths.get(System.getProperty("java.io.tmpdir"))))
+      jsonSchemasAlg = JsonSchemas.impl[F](
+        new FileSystemSchemaRepo(
+          Paths.get(System.getProperty("java.io.tmpdir"))
+        )
+      )
 
       // Combine Service Routes into an HttpApp.
       // Can also be done via a Router if you
@@ -27,20 +31,21 @@ object Server {
       // in the underlying routes.
       httpApp = (
         Routes.helloWorldRoutes[F](helloWorldAlg) <+>
-        Routes.jokeRoutes[F](jokeAlg) <+>
-        Routes.schemaRoutes(jsonSchemasAlg)
+          Routes.jokeRoutes[F](jokeAlg) <+>
+          Routes.schemaRoutes(jsonSchemasAlg)
       ).orNotFound
 
       // With Middlewares in place
       finalHttpApp = Logger.httpApp(true, true)(httpApp)
 
       exitCode <- Stream.resource(
-        EmberServerBuilder.default[F]
+        EmberServerBuilder
+          .default[F]
           .withHost(ipv4"0.0.0.0")
           .withPort(port"8080")
           .withHttpApp(finalHttpApp)
           .build >>
-        Resource.eval(Async[F].never)
+          Resource.eval(Async[F].never)
       )
     } yield exitCode
   }.drain
