@@ -1,25 +1,21 @@
 package job.interview.snowplow
 
 import cats.effect.IO
-import fs2.Chunk
 import io.circe._
 import job.interview.snowplow.domain.SchemaId
-import job.interview.snowplow.repo.FileSystemSchemaRepo
+import job.interview.snowplow.repo.TestFileSystemSchemaRepo
 import munit.CatsEffectSuite
 import org.http4s._
 import org.http4s.circe.jsonOf
 import org.http4s.implicits._
-import io.circe.parser._
 import org.apache.commons.io.FileUtils
 
-import java.nio.file.{Files, Path, Paths}
+import java.nio.file.Files
 
 
 class JsonSchemasSpec extends CatsEffectSuite {
 
   implicit def jsonDecoder[A : Decoder]: EntityDecoder[IO, A] = jsonOf[IO, A]
-
-  class TestFileSystemSchemaRepo(val baseDir: Path) extends FileSystemSchemaRepo[IO](baseDir)
 
   case class SchemasFixture(repo: TestFileSystemSchemaRepo, jsonSchemas: JsonSchemas[IO]) {
     def post(body: String, schemaId: SchemaId) = {
@@ -33,8 +29,6 @@ class JsonSchemasSpec extends CatsEffectSuite {
 
   }
 
-  def json(s: String) = parse(s).toOption.get
-
   val jsonSchemas = FunFixture[SchemasFixture](
     setup = { test =>
       val repo = new TestFileSystemSchemaRepo(Files.createTempDirectory(s"${test.name}_"))
@@ -44,9 +38,6 @@ class JsonSchemasSpec extends CatsEffectSuite {
       FileUtils.deleteDirectory(f.repo.baseDir.toFile)
     }
   )
-
-  def toByteStream(s: String) = fs2.Stream.chunk(Chunk.array(s.getBytes("UTF-8")))
-
 
   jsonSchemas.test("should upload schema") { jst =>
     val res = jst.post("""{"name":"Alice"}""", SchemaId("test1"))
