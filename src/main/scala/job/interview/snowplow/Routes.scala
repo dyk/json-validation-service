@@ -29,7 +29,11 @@ object Routes {
 
     object schema {
       def uploaded(schemaId: SchemaId) =
-        response(action = "uploadSchema", status = "success", schemaId = schemaId)
+        response(
+          action = "uploadSchema",
+          status = "success",
+          schemaId = schemaId
+        )
       def error(schemaId: SchemaId, errorMsg: String) = response(
         action = "uploadSchema",
         status = "error",
@@ -99,25 +103,4 @@ object Routes {
     }
   }
 
-  def jokeRoutes[F[_]: Sync](J: Jokes[F]): HttpRoutes[F] = {
-    val dsl = new Http4sDsl[F] {}
-    import dsl._
-    HttpRoutes.of[F] { case GET -> Root / "joke" =>
-      for {
-        joke <- J.get
-        resp <- Ok(joke)
-      } yield resp
-    }
-  }
-
-  def helloWorldRoutes[F[_]: Sync](H: HelloWorld[F]): HttpRoutes[F] = {
-    val dsl = new Http4sDsl[F] {}
-    import dsl._
-    HttpRoutes.of[F] { case GET -> Root / "hello" / name =>
-      for {
-        greeting <- H.hello(HelloWorld.Name(name))
-        resp <- Ok(greeting)
-      } yield resp
-    }
-  }
 }

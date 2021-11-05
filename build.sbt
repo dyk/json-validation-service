@@ -5,6 +5,7 @@ val LogbackVersion = "1.2.6"
 val MunitCatsEffectVersion = "1.0.6"
 val CommonsIoVersion = "2.11.0"
 val JsonSchemaValidatorVersion = "2.2.14"
+val PureConfigVersion = "0.17.0"
 
 lazy val root = (project in file("."))
   .settings(
@@ -20,6 +21,8 @@ lazy val root = (project in file("."))
       "org.http4s" %% "http4s-dsl" % Http4sVersion,
       "io.circe" %% "circe-generic" % CirceVersion,
       "io.circe" %% "circe-parser" % CirceVersion,
+      // "com.github.pureconfig" %% "pureconfig-fs2" % PureConfigVersion,
+      "com.github.pureconfig" %% "pureconfig" % PureConfigVersion,
       "org.scalameta" %% "munit" % MunitVersion % Test,
       "org.typelevel" %% "munit-cats-effect-3" % MunitCatsEffectVersion % Test,
       "commons-io" % "commons-io" % CommonsIoVersion % Test,

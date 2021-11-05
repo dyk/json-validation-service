@@ -5,35 +5,29 @@ import cats.syntax.all._
 import com.comcast.ip4s._
 import fs2.Stream
 import job.interview.snowplow.repo.FileSystemSchemaRepo
-import org.http4s.ember.client.EmberClientBuilder
 import org.http4s.ember.server.EmberServerBuilder
 import org.http4s.implicits._
 import org.http4s.server.middleware.Logger
+import pureconfig.ConfigSource
 
 import java.nio.file.Paths
+import pureconfig.generic.auto._
 
 object Server {
 
+  case class AppConfig(jsonSchemaRepoBaseDir: String)
+
   def stream[F[+_]: Async]: Stream[F, Nothing] = {
     for {
-      client <- Stream.resource(EmberClientBuilder.default[F].build)
-      helloWorldAlg = HelloWorld.impl[F]
-      jokeAlg = Jokes.impl[F](client)
+      config <- Stream(ConfigSource.default.load[AppConfig].toOption.get)
       repo = new FileSystemSchemaRepo(
-        Paths.get(System.getProperty("java.io.tmpdir"))
+        Paths.get(config.jsonSchemaRepoBaseDir)
       )
-
       jsonSchemasAlg = JsonSchemas.impl[F](repo)
       jsonValidationAlg = JsonValidation.impl[F](repo)
 
-      // Combine Service Routes into an HttpApp.
-      // Can also be done via a Router if you
-      // want to extract a segments not checked
-      // in the underlying routes.
       httpApp = (
-        Routes.helloWorldRoutes[F](helloWorldAlg) <+>
-          Routes.jokeRoutes[F](jokeAlg) <+>
-          Routes.schemaRoutes(jsonSchemasAlg) <+>
+        Routes.schemaRoutes(jsonSchemasAlg) <+>
           Routes.validateRoutes(jsonValidationAlg)
       ).orNotFound
 
@@ -51,4 +45,5 @@ object Server {
       )
     } yield exitCode
   }.drain
+
 }
