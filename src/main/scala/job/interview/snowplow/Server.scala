@@ -19,11 +19,12 @@ object Server {
       client <- Stream.resource(EmberClientBuilder.default[F].build)
       helloWorldAlg = HelloWorld.impl[F]
       jokeAlg = Jokes.impl[F](client)
-      jsonSchemasAlg = JsonSchemas.impl[F](
-        new FileSystemSchemaRepo(
-          Paths.get(System.getProperty("java.io.tmpdir"))
-        )
+      repo = new FileSystemSchemaRepo(
+        Paths.get(System.getProperty("java.io.tmpdir"))
       )
+
+      jsonSchemasAlg = JsonSchemas.impl[F](repo)
+      jsonValidationAlg = JsonValidation.impl[F](repo)
 
       // Combine Service Routes into an HttpApp.
       // Can also be done via a Router if you
@@ -32,7 +33,8 @@ object Server {
       httpApp = (
         Routes.helloWorldRoutes[F](helloWorldAlg) <+>
           Routes.jokeRoutes[F](jokeAlg) <+>
-          Routes.schemaRoutes(jsonSchemasAlg)
+          Routes.schemaRoutes(jsonSchemasAlg) <+>
+          Routes.validateRoutes(jsonValidationAlg)
       ).orNotFound
 
       // With Middlewares in place
