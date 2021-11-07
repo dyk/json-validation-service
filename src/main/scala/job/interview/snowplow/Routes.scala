@@ -58,7 +58,7 @@ object Routes {
 
   }
 
-  def schemaRoutes[F[_]: Concurrent](S: JsonSchemas[F]): HttpRoutes[F] = {
+  def schemaRoutes[F[_]: Async](S: JsonSchemas[F]): HttpRoutes[F] = {
     val dsl = new Http4sDsl[F] {}
     import dsl._
     import JsonSchemas._
@@ -83,7 +83,7 @@ object Routes {
     }
   }
 
-  def validateRoutes[F[_]: Concurrent](V: JsonValidation[F]): HttpRoutes[F] = {
+  def validateRoutes[F[_]: Async](V: JsonValidation[F]): HttpRoutes[F] = {
     val dsl = new Http4sDsl[F] {}
     import dsl._
     import JsonValidation._
